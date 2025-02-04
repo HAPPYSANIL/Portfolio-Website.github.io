@@ -1,22 +1,37 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-  - main  # Runs pipeline when code is pushed to the main branch
+  - main  # Runs when you push to the main branch
 
 pool:
-  vmImage: 'ubuntu-latest'  # Runs the pipeline on a Linux machine
+  vmImage: 'ubuntu-latest'
 
-steps:
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$(Build.SourcesDirectory)'  # Source code directory
-      Contents: '**'  # Copy everything
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'  # Staging folder
+stages:
+  - stage: Build
+    displayName: "Build Stage"
+    jobs:
+      - job: BuildJob
+        displayName: "Build Job"
+        steps:
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: '$(Build.SourcesDirectory)'
+              Contents: '**'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'  # Creates an artifact named 'drop'
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: '$(Build.ArtifactStagingDirectory)'
+              artifactName: 'drop'
+
+  - stage: Deploy
+    displayName: "Deploy Stage"
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: DeployJob
+        displayName: "Deploy Job"
+        steps:
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: 'azureserviceconnectioncicd'
+              appName: 'cicdsample'
+              package: '$(Pipeline.Workspace)/drop'
