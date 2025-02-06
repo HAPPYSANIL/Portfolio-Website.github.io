@@ -42,6 +42,8 @@ stages:
           - task: AzureWebApp@1
             displayName: "Deploy to Azure Web App"
             inputs:
-              azureSubscription: 'Azure-DevOps-Service-Connection'
-              appName: '<YOUR-WEB-APP-NAME>'
-              package: '$(Pipeline.Workspace)/drop'  # Corrected path to reference downloaded artifact
+              azureSubscription: 'azureserviceconnectioncicd'
+              appType: 'webAppLinux'
+              appName: 'cicdsample'
+              package: '$(Pipeline.Workspace)/drop'
+              runtimeStack: 'STATICSITE|1.0'
